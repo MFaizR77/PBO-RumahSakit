@@ -35,3 +35,6 @@ Program sederhana berbasis Java yang mensimulasikan proses pendaftaran pasien di
 2. Kompilasi semua file:
    ```bash
    javac *.java
+3. Jalankan program
+   ```bash
+   java RumahSakit  
