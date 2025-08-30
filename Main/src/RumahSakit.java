@@ -1,6 +1,12 @@
 import java.util.Scanner;
+import java.util.List;
 
 public class RumahSakit {
+
+    private static final int BIAYA_UMUM = 50_000;
+    private static final int BIAYA_THT = 75_000;
+    private static final int BIAYA_DALAM = 100_000;
+
     public static void main(String[] args) {
         System.out.println("🏥 SELAMAT DATANG DI RUMAH SAKIT ABC 🏥");
         System.out.println("=" .repeat(50));
@@ -18,15 +24,9 @@ public class RumahSakit {
             TampilkanMenuUtama();
 
             System.out.println("\n=== Rumah Sakit ===");
-            System.out.print("👤 Nama Lengkap Pasien : ");
-            String nama = sc.nextLine();
-
-            System.out.print("🩺 Keluhan/Penyakit     : ");
-            String penyakit = sc.nextLine();
-
-            System.out.print("🎂 Umur Pasien         : ");
-            int umur = sc.nextInt();
-            sc.nextLine();
+            String nama = inputString(sc, "👤 Nama Lengkap Pasien : ");
+            String penyakit = inputString(sc, "🩺 Keluhan/Penyakit     : ");
+            int umur = inputInteger(sc, "🎂 Umur Pasien          : ", 1, 120);
 
             // Buat objek pasien
             Pasien pasien = new Pasien(nama, penyakit, umur);
@@ -35,31 +35,32 @@ public class RumahSakit {
             Dokter dokterTujuan;
             int biaya = 0;
 
-            if (penyakit.equalsIgnoreCase("flu") || penyakit.equalsIgnoreCase("demam")
-                    || penyakit.equalsIgnoreCase("batuk") || penyakit.equalsIgnoreCase("pilek")
-                    || penyakit.equalsIgnoreCase("sakit kepala")|| penyakit.equalsIgnoreCase("mual")) {
+            if (termasukKeluhanUmum(penyakit)) {
                 dokterTujuan = dokterUmum;
-                biaya = 50000;
-            } else if (penyakit.equalsIgnoreCase("telinga") || penyakit.equalsIgnoreCase("hidung")
-                    || penyakit.equalsIgnoreCase("tenggorokan")|| penyakit.equalsIgnoreCase("tht")
-                    || penyakit.equalsIgnoreCase("sinusitis")|| penyakit.equalsIgnoreCase("amandel")) {
+                biaya = BIAYA_UMUM;
+            } else if (termasukKeluhanTHT(penyakit)) {
                 dokterTujuan = dokterTHT;
-                biaya = 75000;
+                biaya = BIAYA_THT;
             } else {
                 dokterTujuan = dokterDalam;
-                biaya = 100000;
+                biaya = BIAYA_DALAM;
             }
+
 
             // Proses pemeriksaan
             dokterTujuan.periksaPasien(pasien);
 
             // Proses pembayaran
-            System.out.print("Total pembayaran: " + biaya + "\n");
-            System.out.print("Konfirmansi pembayaran? (y): ");
+            System.out.println("\n" + "💳 PEMBAYARAN".indent(4));
+            System.out.printf("💰 Total Biaya: Rp %,d\n", biaya);
+            System.out.print("Konfirmasi pembayaran? (y/n): ");
             String konfirmasi = sc.nextLine();
             if (konfirmasi.equalsIgnoreCase("y")) {
                 Pembayaran pembayaran = new Pembayaran(biaya);
+                System.out.println("✅ Pembayaran berhasil. Terima kasih!");
                 pembayaran.bayar(pasien, dokterTujuan);
+            } else {
+                System.out.println("❌ Pembayaran dibatalkan.");
             }
 
 
@@ -81,4 +82,44 @@ public class RumahSakit {
         System.out.println("=" .repeat(30));
     }
 
+    private static String inputString(Scanner sc, String prompt) {
+        String input;
+        do {
+            System.out.print(prompt);
+            input = sc.nextLine().trim();
+            if (input.isEmpty()) {
+                System.out.println("❌ Nama/keluhan tidak boleh kosong. Silakan isi kembali.");
+            }
+        } while (input.isEmpty());
+        return input;
+    }
+
+    private static int inputInteger(Scanner sc, String prompt, int min, int max) {
+        int nilai = 0;
+        boolean valid = false;
+        while (!valid) {
+            try {
+                System.out.print(prompt);
+                nilai = Integer.parseInt(sc.nextLine().trim());
+                if (nilai < min || nilai > max) {
+                    System.out.printf("❌ Umur harus antara %d dan %d tahun.\n", min, max);
+                } else {
+                    valid = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Input tidak valid. Harap masukkan angka.");
+            }
+        }
+        return nilai;
+    }
+
+    private static boolean termasukKeluhanUmum(String penyakit) {
+        return List.of("flu", "demam", "batuk", "pilek", "sakit kepala", "mual", "sakit perut", "gejala ringan")
+                .contains(penyakit.toLowerCase());
+    }
+
+    private static boolean termasukKeluhanTHT(String penyakit) {
+        return List.of("telinga", "hidung", "tenggorokan", "tht", "sinusitis", "amandel", "radang", "suara serak")
+                .contains(penyakit.toLowerCase());
+    }
 }
